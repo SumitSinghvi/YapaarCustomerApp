@@ -1,21 +1,25 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, Text, TouchableOpacity } from "react-native";
 import { View } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setFairPrice, setGoodsType } from "@/src/slices/vehicle";
 import { bookRide } from "@/src/services/bookride";
+import { Location } from "@/src/slices/location";
 
 export default function order() {
   const navigation = useNavigation();
   const [selectedGoods, setSelectedGoods] = useState("");
   const dispatch = useDispatch();
+  const location = useSelector((state: { location: { pickup: Location, dropoff: Location }}) => state.location);
+  const auth = useSelector((state: { auth: { token: string, user: any}}) => state.auth);
   const handleSubmit = async () => {
     dispatch(setGoodsType(selectedGoods));
     dispatch(setFairPrice(900));
-    const response = await bookRide();
+    const response = await bookRide(auth, location);
+    router.replace("/(app)/(tabs)/(home)/ride");
   };
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-interface Location {
+export interface Location {
   name: string | null;
   phoneNumber: string | null;
   placeName: string | null;

@@ -11,6 +11,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(home)"
         options={{
+          title: "Home",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "home" : "home-outline"}
@@ -23,6 +24,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
+          title: "Profile",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "person" : "person-outline"}
@@ -35,6 +37,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="ride"
         options={{
+          title: "Ride",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "car" : "car-outline"}
