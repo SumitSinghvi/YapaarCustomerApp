@@ -11,9 +11,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import CheckBox from "expo-checkbox";
-import Map from "@/src/components/Map";
+import Map from "~/src/components/Map";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { setDropoffLocation } from "@/src/slices/location";
+import { setDropoffLocation } from "~/src/slices/location";
 import { router } from "expo-router";
 
 // Validation schema using Yup

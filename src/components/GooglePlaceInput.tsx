@@ -9,10 +9,10 @@ import {
 } from "react-native";
 import axios from "axios";
 import debounce from "lodash.debounce";
-import { getLatandlong } from "@/src/services/places";
+import { getLatandlong } from "~/src/services/places";
 import { router } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import { setDropoffLocation, setPickupLocation } from "@/src/slices/location";
+import { setDropoffLocation, setPickupLocation } from "~/src/slices/location";
 
 interface Prediction {
   placePrediction: {

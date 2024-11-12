@@ -1,4 +1,4 @@
-import { setVehicleType } from "@/src/slices/vehicle";
+import { setVehicleType } from "~/src/slices/vehicle";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";

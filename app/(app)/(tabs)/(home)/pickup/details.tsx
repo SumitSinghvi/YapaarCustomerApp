@@ -11,9 +11,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import CheckBox from "expo-checkbox";
-import Map from "@/src/components/Map";
+import Map from "~/src/components/Map";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { setPickupLocation } from "@/src/slices/location";
+import { setPickupLocation } from "~/src/slices/location";
 import { router } from "expo-router";
 
 // Validation schema using Yup
@@ -59,7 +59,10 @@ export default function AddressDetails() {
           >
             {pickUpLocation.placeName}
           </Text>
-          <Pressable onPress={() => router.back()} className="border border-gray-700 p-1 rounded-md">
+          <Pressable
+            onPress={() => router.back()}
+            className="border border-gray-700 p-1 rounded-md"
+          >
             <Text className="text-blue-500 text-xs font-semibold">Change</Text>
           </Pressable>
         </View>

@@ -1,5 +1,5 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import PickupLocationInput from "@/src/components/GooglePlaceInput";
+import PickupLocationInput from "~/src/components/GooglePlaceInput";
 import { useNavigation } from "expo-router";
 import { useEffect } from "react";
 

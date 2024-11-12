@@ -2,10 +2,10 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import * as Yup from "yup";
 import { Formik } from "formik";
 import { useState } from "react";
-import { sendOTP, verifyOTP } from "@/src/services/authAPI";
+import { sendOTP, verifyOTP } from "~/src/services/authAPI";
 import { router } from "expo-router";
 import { useDispatch } from "react-redux";
-import { setCredentials } from "@/src/slices/authSlice";
+import { setCredentials } from "~/src/slices/authSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function signIn() {

@@ -5,16 +5,21 @@ import { Pressable, Text, TouchableOpacity } from "react-native";
 import { View } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useDispatch, useSelector } from "react-redux";
-import { setFairPrice, setGoodsType } from "@/src/slices/vehicle";
-import { bookRide } from "@/src/services/bookride";
-import { Location } from "@/src/slices/location";
+import { setFairPrice, setGoodsType } from "~/src/slices/vehicle";
+import { bookRide } from "~/src/services/bookride";
+import { Location } from "~/src/slices/location";
 
 export default function order() {
   const navigation = useNavigation();
   const [selectedGoods, setSelectedGoods] = useState("");
   const dispatch = useDispatch();
-  const location = useSelector((state: { location: { pickup: Location, dropoff: Location }}) => state.location);
-  const auth = useSelector((state: { auth: { token: string, user: any}}) => state.auth);
+  const location = useSelector(
+    (state: { location: { pickup: Location; dropoff: Location } }) =>
+      state.location
+  );
+  const auth = useSelector(
+    (state: { auth: { token: string; user: any } }) => state.auth
+  );
   const handleSubmit = async () => {
     dispatch(setGoodsType(selectedGoods));
     dispatch(setFairPrice(900));

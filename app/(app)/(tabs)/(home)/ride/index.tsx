@@ -1,11 +1,11 @@
-import { Location } from "@/src/slices/location";
+import { Location } from "~/src/slices/location";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import MapViewDirections from "react-native-maps-directions";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
-import { getSocket } from "@/src/services/socket";
+import { getSocket } from "~/src/services/socket";
 
 export default function index() {
   const location = useSelector(

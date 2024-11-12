@@ -1,4 +1,4 @@
-import { getToken } from "@/src/utils/asyncStorage";
+import { getToken } from "~/src/utils/asyncStorage";
 
 export const postQuery = async (phoneNumber: string) => {
   const token = await getToken();

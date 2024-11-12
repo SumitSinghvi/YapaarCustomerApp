@@ -2,7 +2,7 @@
 // import React, { useEffect, useState } from 'react';
 // import { View, Text, Button, StyleSheet, Alert } from 'react-native';
 // import { useLocalSearchParams, useRouter } from 'expo-router';
-// import { getSocket } from '@/src/services/socket';
+// import { getSocket } from '~/src/services/socket';
 
 // const RideRequestScreen = () => {
 //   const router = useRouter();
@@ -69,8 +69,8 @@
 //   },
 // });
 
-import useInitializeSocket from "@/src/hooks/useInitializeSocket";
-import { getSocket } from "@/src/services/socket";
+import useInitializeSocket from "~/src/hooks/useInitializeSocket";
+import { getSocket } from "~/src/services/socket";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useRouter } from "expo-router";
 import { useEffect } from "react";
@@ -93,4 +93,3 @@ export default function Index() {
     </SafeAreaView>
   );
 }
-

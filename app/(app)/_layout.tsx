@@ -1,4 +1,4 @@
-import { setCredentials } from "@/src/slices/authSlice";
+import { setCredentials } from "~/src/slices/authSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Redirect, Stack } from "expo-router";
 import { useEffect, useState } from "react";
@@ -12,7 +12,9 @@ export default function AppLayout() {
     const storedToken = await AsyncStorage.getItem("tokenYCA");
     const storedUser = await AsyncStorage.getItem("userYCA");
     if (storedToken && storedUser) {
-      dispatch(setCredentials({ token: storedToken, user: JSON.parse(storedUser) }));
+      dispatch(
+        setCredentials({ token: storedToken, user: JSON.parse(storedUser) })
+      );
     }
     setToken(storedToken);
   };
