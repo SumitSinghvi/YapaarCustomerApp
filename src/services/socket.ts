@@ -5,8 +5,7 @@ import { logout } from "../slices/authSlice";
 
 let socket: Socket | null = null;
 
-export const initializeSocket = async () => {
-  const token = await AsyncStorage.getItem("token");
+export const initializeSocket = async (token: String | null) => {
   if (!token) {
     return null;
   }

@@ -26,7 +26,7 @@ export default function Home() {
 
   const handleBook = () => {
     if (!Location?.pickup?.placeName) {
-      router.push("/(app)/(tabs)/(home)/address");
+      router.push("/(app)/(tabs)/(home)/pickup");
     } else if (!Location?.dropoff?.placeName) {
       router.push("/(app)/(tabs)/(home)/drop");
     } else if (Location?.pickup?.placeName && Location?.dropoff?.placeName) {
@@ -37,7 +37,7 @@ export default function Home() {
   return (
     <SafeAreaView>
       <Pressable
-        onPress={() => router.push("/(app)/(tabs)/(home)/address")}
+        onPress={() => router.push("/(app)/(tabs)/(home)/pickup")}
         className="w-[90%] bg-white flex flex-row items-center mb-2 space-x-3 rounded-lg p-4 mx-auto"
       >
         <Ionicons name="location" size={24} color="black" />

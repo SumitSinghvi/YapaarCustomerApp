@@ -9,8 +9,8 @@ export default function AppLayout() {
   const [token, setToken] = useState<string | null>("");
   const dispatch = useDispatch();
   const checkToken = async () => {
-    const storedToken = await AsyncStorage.getItem("token");
-    const storedUser  = await AsyncStorage.getItem("user");
+    const storedToken = await AsyncStorage.getItem("tokenYCA");
+    const storedUser = await AsyncStorage.getItem("userYCA");
     if (storedToken && storedUser) {
       dispatch(setCredentials({ token: storedToken, user: JSON.parse(storedUser) }));
     }

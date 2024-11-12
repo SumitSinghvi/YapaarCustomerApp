@@ -108,7 +108,7 @@ const PickupLocationInput = ({ type }: { type: string }) => {
         })
       );
       router.push({
-        pathname: "/(app)/(tabs)/(home)/address/details",
+        pathname: "/(app)/(tabs)/(home)/pickup/details",
       });
     }
   };

@@ -32,6 +32,8 @@ export async function bookRide(auth: Auth, location: RideLocation): Promise<void
                     coordinates: [location.dropoff.longitude, location.dropoff.latitude],
                 }
             },
+            fare: "900",
+            commercial: false,
         }, {
             headers: {
                 Authorization: `Bearer ${auth.token}`,

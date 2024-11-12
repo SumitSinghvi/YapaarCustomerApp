@@ -11,7 +11,7 @@ export const saveToken = async (token: string) => {
 
 export const getToken = async () => {
   try {
-    return await AsyncStorage.getItem('token');
+    return await AsyncStorage.getItem('tokenYCA');
   } catch (error) {
     console.error('Error getting token:', error);
     return null;

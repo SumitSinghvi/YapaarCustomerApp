@@ -87,8 +87,8 @@ export default function signIn() {
               const { user, token } = res;
               // console.log("user", user);
               dispatch(setCredentials({ user, token }));
-              await AsyncStorage.setItem("token", token);
-              await AsyncStorage.setItem("user", JSON.stringify(user));
+              await AsyncStorage.setItem("tokenYCA", token);
+              await AsyncStorage.setItem("userYCA", JSON.stringify(user));
               router.replace("/");
             } catch (error) {
               console.error(error);

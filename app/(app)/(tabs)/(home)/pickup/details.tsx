@@ -59,7 +59,7 @@ export default function AddressDetails() {
           >
             {pickUpLocation.placeName}
           </Text>
-          <Pressable className="border border-gray-700 p-1 rounded-md">
+          <Pressable onPress={() => router.back()} className="border border-gray-700 p-1 rounded-md">
             <Text className="text-blue-500 text-xs font-semibold">Change</Text>
           </Pressable>
         </View>

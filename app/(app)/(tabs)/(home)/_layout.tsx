@@ -5,7 +5,7 @@ export default function HomeLayout() {
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
-        name="address"
+        name="pickup"
         options={{
           headerShown: false,
         }}
