@@ -15,11 +15,11 @@ const initialState = {
   pickup: {
     name: null,
     phoneNumber: null,
-    placeName: "KP heights, nikol, Ahmedabad, Gujarat",
+    placeName: null,
     placeId: null,
     houseNumberPlate: null,
-    latitude: 23.032927179370382,
-    longitude: 72.65921250098766,
+    latitude: null,
+    longitude: null,
     addressType: null,
   } as Location,
   dropoff: {
