@@ -1,18 +1,20 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   View,
-  TextInput,
-  FlatList,
   Text,
   TouchableOpacity,
   StyleSheet,
+  TextInput,
+  ScrollView,
 } from "react-native";
-import axios from "axios";
 import debounce from "lodash.debounce";
-import { getLatandlong } from "~/src/services/places";
+import { autocomplete, getLatandlong } from "~/src/services/places";
 import { router } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { setDropoffLocation, setPickupLocation } from "~/src/slices/location";
+import { Input } from "~/components/ui/input";
+import { useQuery } from "@tanstack/react-query";
+import { recentRides } from "../services/recentRides";
 
 interface Prediction {
   placePrediction: {
@@ -23,45 +25,42 @@ interface Prediction {
   };
 }
 
-const PickupLocationInput = ({ type }: { type: string }) => {
+const PickupLocationInput = () => {
   const [query, setQuery] = useState("");
+  const [dropQuery, setDropQuery] = useState("");
+  const [activeInput, setActiveInput] = useState("pickup");
   const [predictions, setPredictions] = useState<Prediction[]>([]);
-  const dispatch = useDispatch();
+
+  // Ref for focusing on pickup input
+  const inputRef = useRef<TextInput>(null);
+
   const pickuplocation = useSelector(
     (state: { location: { pickup: any } }) => state.location.pickup
   );
   const droplocation = useSelector(
     (state: { location: { dropoff: any } }) => state.location.dropoff
   );
+  const dispatch = useDispatch();
 
-  // Replace with your actual API key
-  const GOOGLE_PLACES_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API;
+  // Fetch recent rides using React Query
+  const {
+    data: recentAddresses,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["recentSearches"],
+    queryFn: async () => {
+      const response = await recentRides();
+      return response;
+    },
+  });
 
   // Debounced function to fetch autocomplete predictions
   const fetchPredictions = useCallback(
     debounce(async (input: string) => {
       if (input.length > 2) {
-        try {
-          const response = await axios.post(
-            "https://places.googleapis.com/v1/places:autocomplete",
-            {
-              input: input,
-              includedRegionCodes: ["in"],
-            },
-            {
-              headers: {
-                "Content-Type": "application/json",
-                "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
-              },
-            }
-          );
-
-          if (response.data.suggestions) {
-            setPredictions(response.data.suggestions);
-          }
-        } catch (error) {
-          console.error("Error fetching autocomplete predictions:", error);
-        }
+        const response = await autocomplete(input);
+        setPredictions(response);
       } else {
         setPredictions([]);
       }
@@ -69,22 +68,16 @@ const PickupLocationInput = ({ type }: { type: string }) => {
     []
   );
 
-  // Handle input changes
-  const handleInputChange = (text: string) => {
-    setQuery(text);
-    fetchPredictions(text);
-  };
-
   // Handle selection of a prediction
   const handleSelectPrediction = async (prediction: {
     description: string;
     place_id: string;
   }) => {
-    setQuery(prediction.description);
     setPredictions([]);
     // You can also fetch place details here if needed
     const latAndLong = await getLatandlong(prediction.place_id);
-    if (type === "drop") {
+    if (activeInput === "drop") {
+      setDropQuery(prediction.description)
       dispatch(
         setDropoffLocation({
           ...droplocation,
@@ -94,10 +87,8 @@ const PickupLocationInput = ({ type }: { type: string }) => {
           longitude: latAndLong.location.longitude,
         })
       );
-      router.push({
-        pathname: "/(app)/(tabs)/(home)/drop/details",
-      });
-    } else if (type === "pick up") {
+    } else if (activeInput === "pickup") {
+      setQuery(prediction.description);
       dispatch(
         setPickupLocation({
           ...pickuplocation,
@@ -107,25 +98,49 @@ const PickupLocationInput = ({ type }: { type: string }) => {
           longitude: latAndLong.location.longitude,
         })
       );
-      router.push({
-        pathname: "/(app)/(tabs)/(home)/pickup/details",
-      });
+    }
+    if( query !== '' && dropQuery !== ''){
+      router.replace("/(app)/(tabs)/(home)/pickup/details");
     }
   };
 
+  // Focus on pickup input when screen opens
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder={`Enter ${type} location`}
+    <View className="px-4">
+      <Input
+        ref={inputRef}
+        className="w-[90%] mx-auto px-4 mb-2"
+        placeholder={`Enter pick up location`}
         value={query}
-        onChangeText={handleInputChange}
+        onChangeText={(text) => {
+          setQuery(text);
+          fetchPredictions(text);
+          setActiveInput("pickup");
+        }}
+        onFocus={() => setActiveInput("pickup")}
+      />
+      <Input
+        className="w-[90%] mx-auto px-4"
+        placeholder={`Where to ?`}
+        value={dropQuery}
+        onChangeText={(text) => {
+          setDropQuery(text);
+          fetchPredictions(text);
+          setActiveInput("drop");
+        }}
+        onFocus={() => setActiveInput("drop")}
       />
       {predictions.length > 0 &&
         predictions.map((prediction: Prediction) => (
           <TouchableOpacity
+          className="py-2 mt-2 mx-4 border-b border-gray-200 "
             key={prediction.placePrediction.placeId}
-            style={styles.predictionItem}
             onPress={() =>
               handleSelectPrediction({
                 description: prediction.placePrediction.text.text,
@@ -133,37 +148,83 @@ const PickupLocationInput = ({ type }: { type: string }) => {
               })
             }
           >
-            <Text>{prediction.placePrediction.text.text}</Text>
+            <Text ellipsizeMode="tail" numberOfLines={1} className="text-xs text-stone-600">{prediction.placePrediction.text.text}</Text>
           </TouchableOpacity>
         ))}
+
+      {/* Show loading state */}
+      {isLoading && <Text>Loading recent addresses...</Text>}
+
+      {/* Show error if there's an issue */}
+      {error && <Text>Error fetching recent addresses.</Text>}
+
+      {/* Display recent addresses if available */}
+      {!isLoading && !error && recentAddresses && predictions.length == 0 && (
+        <ScrollView className="py-4">
+          {recentAddresses.uniqueAddresses
+            .filter(
+              (
+                address: {
+                  pickupAddress: { address: string };
+                  dropAddress: { address: string };
+                },
+                index: number,
+                self: {
+                  pickupAddress: { address: string };
+                  dropAddress: { address: string };
+                }[]
+              ) =>
+                index ===
+                self.findIndex(
+                  (addr) =>
+                    addr.pickupAddress.address ===
+                      address.pickupAddress.address &&
+                    addr.dropAddress.address === address.dropAddress.address
+                )
+            )
+            .map(
+              (
+                address: {
+                  dropAddress: { address: string, placeId: string };
+                  pickupAddress: { address: string, placeId: string };
+                },
+                index: number
+              ) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    handleSelectPrediction({
+                      description: activeInput == 'pickup' ? address.pickupAddress.address : address.dropAddress.address,
+                      place_id: activeInput == 'drop' ? address.pickupAddress.placeId : address.dropAddress.placeId,
+                    });
+                  }}
+                  key={index}
+                  className="mb-2 py-2 mx-4 border-b border-gray-200 "
+                >
+                  {activeInput === "drop" ? (
+                    <Text
+                      ellipsizeMode="tail"
+                      numberOfLines={1}
+                      className="text-xs text-stone-600"
+                    >
+                      {address.dropAddress.address}
+                    </Text>
+                  ) : (
+                    <Text
+                      ellipsizeMode="tail"
+                      numberOfLines={1}
+                      className="text-xs text-stone-600"
+                    >
+                      {address.pickupAddress.address}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              )
+            )}
+        </ScrollView>
+      )}
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    marginTop: 50,
-  },
-  input: {
-    height: 50,
-    borderColor: "#ddd",
-    borderWidth: 1,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-  },
-  predictionsList: {
-    marginTop: 10,
-    backgroundColor: "#fff",
-    borderColor: "#ddd",
-    borderWidth: 1,
-    borderRadius: 5,
-  },
-  predictionItem: {
-    padding: 15,
-    borderBottomColor: "#ddd",
-    borderBottomWidth: 1,
-  },
-});
 
 export default PickupLocationInput;

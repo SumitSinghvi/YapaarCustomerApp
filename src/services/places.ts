@@ -23,3 +23,29 @@ export async function getLatandlong(place_id: string) {
     console.error("Error fetching autocomplete predictions:", error);
   }
 }
+
+export async function autocomplete(input: string) {
+  const GOOGLE_PLACES_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API;
+  
+  try{
+    const response = await axios.post(
+      "https://places.googleapis.com/v1/places:autocomplete",
+      {
+        input: input,
+        includedRegionCodes: ["in"],
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
+  }
+    });
+
+    if (response.data.suggestions) {
+      return response.data.suggestions;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching autocomplete predictions:", error);
+  }
+}

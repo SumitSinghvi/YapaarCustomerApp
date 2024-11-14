@@ -4,6 +4,7 @@ interface Location {
     placeName: string | null;
     longitude: number | null;
     latitude: number | null;
+    placeId: string | null;
 }
 
 interface RideLocation {
@@ -23,6 +24,7 @@ export async function bookRide(auth: Auth, location: RideLocation): Promise<void
                 location: {
                     type: "Point",
                     coordinates: [location.pickup.longitude, location.pickup.latitude],
+                    placeId: location.pickup.placeId,
                 }
             },
             destination: {
@@ -30,6 +32,7 @@ export async function bookRide(auth: Auth, location: RideLocation): Promise<void
                 location: {
                     type: "Point",
                     coordinates: [location.dropoff.longitude, location.dropoff.latitude],
+                    placeId: location.dropoff.placeId,
                 }
             },
             fare: "900",

@@ -1,23 +1,26 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useNavigation } from "expo-router";
 import { useEffect } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Image, Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Text } from "~/components/ui/text";
 
 export default function Home() {
   const navigation = useNavigation();
   const Location = useSelector((state: { location: any }) => state.location);
+  // router.push("/(app)/(tabs)/(home)/search");
 
   useEffect(() => {
     navigation.setOptions({
-      headerShown: true,
+      headerShown: false,
       headerStyle: { backgroundColor: "#f8f8f8" }, // Soft white color
       headerTintColor: "#000000", // Black text color
       headerTitle: "Yapaar",
     });
   }, []);
-
   useEffect(() => {
     if (Location?.pickup?.placeName && Location?.dropoff?.placeName) {
       router.push("/(app)/(tabs)/(home)/checkout");
@@ -35,43 +38,35 @@ export default function Home() {
   };
 
   return (
-    <SafeAreaView>
-      <Pressable
-        onPress={() => router.push("/(app)/(tabs)/(home)/pickup")}
-        className="w-[90%] bg-white flex flex-row items-center mb-2 space-x-3 rounded-lg p-4 mx-auto"
-      >
-        <Ionicons name="location" size={24} color="black" />
-        <View className="flex flex-col w-[85%]">
-          <Text className="font-semibold">Pick up</Text>
-          <Text className="text-xs" ellipsizeMode="tail" numberOfLines={1}>
-            {Location?.pickup?.placeName && Location?.pickup?.name
-              ? Location.pickup.placeName
-              : "Enter pick up location"}
-          </Text>
-        </View>
-      </Pressable>
-      <Pressable
-        onPress={() => router.push("/(app)/(tabs)/(home)/drop")}
-        className="w-[90%] bg-white flex flex-row items-center space-x-3 rounded-lg p-4 mx-auto"
-      >
-        <Ionicons name="location" size={24} color="black" />
-        <View className="flex flex-col">
-          <Text className="font-semibold">Drop to</Text>
-          <Text className="text-xs">
-            {Location?.dropoff?.placeName && Location?.dropoff?.name
-              ? Location.dropoff.placeName
-              : "Enter drop off location"}
-          </Text>
-        </View>
-      </Pressable>
-      <Pressable
-        onPress={() => handleBook()}
-        className="w-[28%] bg-blue-400 mt-3 rounded-lg p-4 mx-auto"
-      >
-        <Text className="text-center text-white font-semibold">
-          Book a ride
-        </Text>
-      </Pressable>
+    <SafeAreaView className="px-5 bg-white">
+      <Text className="text-3xl font-semibold py-4">Yapaar</Text>
+      <View className="flex flex-row">
+        <Button className="border-b-2 w-[12rem]">
+          <View className="flex flex-row items-center gap-3 justify-start w-full">
+            <Image
+              source={require("~/assets/images/sedan.png")}
+              className="w-10 h-10"
+            />
+            <Text className="text-2xl">Ride</Text>
+          </View>
+        </Button>
+        <Button className="w-[12rem]">
+          <View className="flex flex-row items-center gap-3 justify-start w-full">
+            <Image
+              source={require("~/assets/images/parcel.png")}
+              className="w-10 h-10"
+            />
+            <Text className="text-2xl">Package</Text>
+          </View>
+        </Button>
+      </View>
+      <Button
+      onPress={() => router.push("/(app)/(tabs)/(home)/search")}
+      className="border rounded-lg bg-stone-100 mt-4 flex flex-row justify-start gap-2 h-[4rem]">
+        <Ionicons name="search" size={24} color="black" />
+        <Text className="text-stone-500 font-semibold">Enter pickup point</Text>
+      </Button>
+      
     </SafeAreaView>
   );
 }

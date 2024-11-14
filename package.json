@@ -62,7 +62,8 @@
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^2.5.4",
     "tailwindcss": "^3.4.14",
-    "yup": "^1.4.0"
+    "yup": "^1.4.0",
+    "expo-image": "~1.13.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
