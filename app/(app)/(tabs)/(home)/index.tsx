@@ -11,7 +11,7 @@ import { Text } from "~/components/ui/text";
 export default function Home() {
   const [ride, setRide] = useState(true);
   const navigation = useNavigation();
-  // router.push("/(app)/(tabs)/(home)/search");
+  // router.push("/(app)/(tabs)/(home)/search/");
 
   useEffect(() => {
     navigation.setOptions({
@@ -21,7 +21,6 @@ export default function Home() {
       headerTitle: "Yapaar",
     });
   }, []);
-  
 
   return (
     <SafeAreaView className="bg-[#F4F4F4] h-screen">
@@ -71,14 +70,18 @@ export default function Home() {
         <ScrollView className="py-4 bg-[#F4F4F4]">
           <View className="flex flex-row justify-center gap-4 py-4">
             <View className="bg-white p-4 shadow-lg shadow-left-bottom rounded-lg w-[40%]">
-              <Text className="font-semibold mx-auto text-xl mb-4 text-[#333333]">Trucks</Text>
+              <Text className="font-semibold mx-auto text-xl mb-4 text-[#333333]">
+                Trucks
+              </Text>
               <Image
                 source={require("~/assets/images/3d-truck.png")}
                 className="w-20 h-20 mx-auto"
               />
             </View>
             <View className="bg-white p-4 shadow-lg rounded-lg w-[40%]">
-              <Text className="font-semibold text-xl text-[#333333] mx-auto mb-4">2 Wheelers</Text>
+              <Text className="font-semibold text-xl text-[#333333] mx-auto mb-4">
+                2 Wheelers
+              </Text>
               <Image
                 source={require("~/assets/images/delivery-bike.png")}
                 className="w-20 h-20 mx-auto"

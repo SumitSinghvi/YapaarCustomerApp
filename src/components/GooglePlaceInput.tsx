@@ -15,6 +15,7 @@ import { setDropoffLocation, setPickupLocation } from "~/src/slices/location";
 import { Input } from "~/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { recentRides } from "../services/recentRides";
+import Spinner from "./Spinner";
 
 interface Prediction {
   placePrediction: {
@@ -100,9 +101,9 @@ const PickupLocationInput = () => {
         })
       );
       router.push({
-        pathname: "/(app)/(tabs)/(home)/search/details",
+        pathname: "/(app)/(tabs)/(home)/search/pinLocation",
         params: {
-          type: 'drop'
+          type: "drop",
         },
       });
     } else if (activeInput === "pickup") {
@@ -117,9 +118,9 @@ const PickupLocationInput = () => {
         })
       );
       router.push({
-        pathname: "/(app)/(tabs)/(home)/search/details",
+        pathname: "/(app)/(tabs)/(home)/search/pinLocation",
         params: {
-          type: 'pickup'
+          type: "pickup",
         },
       });
     }
@@ -167,7 +168,8 @@ const PickupLocationInput = () => {
         onFocus={() => setActiveInput("drop")}
         returnKeyType="done"
       />
-      {predictions && predictions.length > 0 &&
+      {predictions &&
+        predictions.length > 0 &&
         predictions.map((prediction: Prediction) => (
           <TouchableOpacity
             className="py-2 mt-2 mx-4 border-b border-gray-200 "
@@ -190,81 +192,85 @@ const PickupLocationInput = () => {
         ))}
 
       {/* Show loading state */}
-      {isLoading && <Text>Loading recent addresses...</Text>}
+      {isLoading && <Spinner visible={true} size="large" color="#d5d5d5" />}
 
       {/* Show error if there's an issue */}
       {error && <Text>Error fetching recent addresses.</Text>}
 
       {/* Display recent addresses if available */}
-      {!isLoading && !error && recentAddresses && predictions && predictions.length == 0 && (
-        <ScrollView className="py-4">
-          {recentAddresses.uniqueAddresses
-            .filter(
-              (
-                address: {
-                  pickupAddress: { address: string };
-                  dropAddress: { address: string };
-                },
-                index: number,
-                self: {
-                  pickupAddress: { address: string };
-                  dropAddress: { address: string };
-                }[]
-              ) =>
-                index ===
-                self.findIndex(
-                  (addr) =>
-                    addr.pickupAddress.address ===
-                      address.pickupAddress.address &&
-                    addr.dropAddress.address === address.dropAddress.address
-                )
-            )
-            .map(
-              (
-                address: {
-                  dropAddress: { address: string; placeId: string };
-                  pickupAddress: { address: string; placeId: string };
-                },
-                index: number
-              ) => (
-                <TouchableOpacity
-                  onPress={() => {
-                    handleSelectPrediction({
-                      description:
-                        activeInput == "pickup"
-                          ? address.pickupAddress.address
-                          : address.dropAddress.address,
-                      place_id:
-                        activeInput == "drop"
-                          ? address.pickupAddress.placeId
-                          : address.dropAddress.placeId,
-                    });
-                  }}
-                  key={index}
-                  className="mb-2 py-2 mx-4 border-b border-gray-200 "
-                >
-                  {activeInput === "drop" ? (
-                    <Text
-                      ellipsizeMode="tail"
-                      numberOfLines={1}
-                      className="text-xs text-stone-600"
-                    >
-                      {address.dropAddress.address}
-                    </Text>
-                  ) : (
-                    <Text
-                      ellipsizeMode="tail"
-                      numberOfLines={1}
-                      className="text-xs text-stone-600"
-                    >
-                      {address.pickupAddress.address}
-                    </Text>
-                  )}
-                </TouchableOpacity>
+      {!isLoading &&
+        !error &&
+        recentAddresses &&
+        predictions &&
+        predictions.length == 0 && (
+          <ScrollView className="py-4">
+            {recentAddresses.uniqueAddresses
+              .filter(
+                (
+                  address: {
+                    pickupAddress: { address: string };
+                    dropAddress: { address: string };
+                  },
+                  index: number,
+                  self: {
+                    pickupAddress: { address: string };
+                    dropAddress: { address: string };
+                  }[]
+                ) =>
+                  index ===
+                  self.findIndex(
+                    (addr) =>
+                      addr.pickupAddress.address ===
+                        address.pickupAddress.address &&
+                      addr.dropAddress.address === address.dropAddress.address
+                  )
               )
-            )}
-        </ScrollView>
-      )}
+              .map(
+                (
+                  address: {
+                    dropAddress: { address: string; placeId: string };
+                    pickupAddress: { address: string; placeId: string };
+                  },
+                  index: number
+                ) => (
+                  <TouchableOpacity
+                    onPress={() => {
+                      handleSelectPrediction({
+                        description:
+                          activeInput == "pickup"
+                            ? address.pickupAddress.address
+                            : address.dropAddress.address,
+                        place_id:
+                          activeInput == "drop"
+                            ? address.pickupAddress.placeId
+                            : address.dropAddress.placeId,
+                      });
+                    }}
+                    key={index}
+                    className="mb-2 py-2 mx-4 border-b border-gray-200 "
+                  >
+                    {activeInput === "drop" ? (
+                      <Text
+                        ellipsizeMode="tail"
+                        numberOfLines={1}
+                        className="text-xs text-stone-600"
+                      >
+                        {address.dropAddress.address}
+                      </Text>
+                    ) : (
+                      <Text
+                        ellipsizeMode="tail"
+                        numberOfLines={1}
+                        className="text-xs text-stone-600"
+                      >
+                        {address.pickupAddress.address}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                )
+              )}
+          </ScrollView>
+        )}
     </View>
   );
 };
