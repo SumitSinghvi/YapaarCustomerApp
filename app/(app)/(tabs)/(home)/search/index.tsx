@@ -14,10 +14,10 @@ export default function SearchFetch() {
       headerShown: true,
     });
   }, [navigation]);
-  
+
   return (
     <SafeAreaView className="bg-white flex-1">
-      <View className="flex gap-2 bg-white p-4">
+      <View>
         <PickupLocationInput />
       </View>
     </SafeAreaView>

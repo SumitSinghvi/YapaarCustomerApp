@@ -4,8 +4,8 @@ import {
   Text,
   TextInput,
   View,
-  Button,
   Pressable,
+  TouchableOpacity,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Formik } from "formik";
@@ -55,172 +55,227 @@ export default function AddressDetails() {
   const [isOther, setIsOther] = useState(false);
 
   return (
-    <SafeAreaView>
-      <View className="h-1/2 bg-black">
+    <SafeAreaView className="flex-1 bg-white">
+      {/* Map Section */}
+      <View className="h-1/2">
         <Map
-          location={params.type == "drop" ? dropOffLocation : pickUpLocation}
+          location={params.type === "drop" ? dropOffLocation : pickUpLocation}
         />
       </View>
-      <ScrollView>
-          <View className="p-2 flex flex-row items-center justify-around border-b border-gray-400">
-            <Text
-              className="font-semibold w-[75%]"
-              ellipsizeMode="tail"
-              numberOfLines={1}
-            >
-              {params.type == "drop"
-                ? dropOffLocation.placeName
-                : pickUpLocation.placeName}
-            </Text>
-            <Pressable className="border border-gray-700 p-1 rounded-md">
-              <Text className="text-blue-500 text-xs font-semibold">
-                Change
-              </Text>
-            </Pressable>
-          </View>
-          <Formik
-            initialValues={{
-              houseApartment: "",
-              name: "",
-              phoneNumber: "",
-              addressType: "",
-              otherName: "",
-            }}
-            validationSchema={validationSchema}
-            onSubmit={(values) => {
-              params.type == "drop"
-                ? dispatch(
-                    setDropoffLocation({
-                      ...dropOffLocation,
-                      phoneNumber: values.phoneNumber,
-                      name: values.name,
-                      houseNumberPlate: values.houseApartment,
-                      addressType: values.addressType,
-                    })
-                  )
-                : dispatch(
-                    setPickupLocation({
-                      ...pickUpLocation,
-                      phoneNumber: values.phoneNumber,
-                      name: values.name,
-                      houseNumberPlate: values.houseApartment,
-                      addressType: values.addressType,
-                    })
-                  );
-              if (pickUpLocation.placeName && dropOffLocation.placeName) {
-                router.push("/(app)/(tabs)/(home)/checkout");
-              } else {
-                router.push("/(app)/(tabs)/(home)/search");
-              }
+
+      {/* Address Details Section */}
+      <ScrollView className="flex-1 p-4">
+        {/* Selected Location Display */}
+        <View className="flex flex-row items-center justify-between p-4 mb-4 border-b border-gray-300">
+          <Text
+            className="font-semibold text-gray-800 flex-1 mr-4"
+            ellipsizeMode="tail"
+            numberOfLines={1}
+          >
+            {params.type === "drop"
+              ? dropOffLocation.placeName
+              : pickUpLocation.placeName}
+          </Text>
+          <Pressable
+            className="border border-blue-500 rounded-md px-3 py-1"
+            onPress={() => {
+              router.push("/(app)/(tabs)/(home)/search");
             }}
           >
-            {({
-              handleChange,
-              handleBlur,
-              handleSubmit,
-              values,
-              errors,
-              touched,
-              setFieldValue,
-            }) => (
-              <View className="p-4">
-                {/* House/Apartment (Optional) */}
-                <Input
-                  className="border p-2 mb-4 rounded-md"
-                  placeholder="House/Apartment (Optional)"
-                  value={values.houseApartment}
-                  onChangeText={handleChange("houseApartment")}
-                  onBlur={handleBlur("houseApartment")}
-                />
+            <Text className="text-blue-500 font-semibold">Change</Text>
+          </Pressable>
+        </View>
 
-                {/* Name */}
-                <Input
-                  className="border p-2 mb-4 rounded-md"
-                  placeholder="Name"
-                  value={values.name}
-                  onChangeText={handleChange("name")}
-                  onBlur={handleBlur("name")}
-                />
-                {touched.name && errors.name && (
-                  <Text className="text-red-500 mb-2">{errors.name}</Text>
-                )}
+        {/* Formik Form */}
+        <Formik
+          initialValues={{
+            houseApartment: "",
+            name: "",
+            phoneNumber: "",
+            addressType: "",
+            otherName: "",
+          }}
+          validationSchema={validationSchema}
+          onSubmit={(values, { setSubmitting }) => {
+            const payload = {
+              phoneNumber: values.phoneNumber,
+              name: values.name,
+              houseNumberPlate: values.houseApartment,
+              addressType: values.addressType,
+              ...(values.addressType === "Other" && {
+                otherName: values.otherName,
+              }),
+            };
 
-                {/* Phone Number */}
-                <Input
-                  className="border p-2 mb-4 rounded-md"
-                  placeholder="Phone Number"
-                  keyboardType="phone-pad"
-                  value={values.phoneNumber}
-                  onChangeText={handleChange("phoneNumber")}
-                  onBlur={handleBlur("phoneNumber")}
-                />
-                {touched.phoneNumber && errors.phoneNumber && (
-                  <Text className="text-red-500 mb-2">
-                    {errors.phoneNumber}
-                  </Text>
-                )}
+            if (params.type === "drop") {
+              dispatch(setDropoffLocation({ ...dropOffLocation, ...payload }));
+            } else {
+              dispatch(setPickupLocation({ ...pickUpLocation, ...payload }));
+            }
 
-                {/* Address Type Checkboxes */}
-                <Text className="mb-4">Save as:</Text>
-                <View className="flex flex-row space-x-3">
-                  <View className="flex flex-row items-center mb-4">
-                    <CheckBox
-                      value={values.addressType === "Home"}
-                      onValueChange={() => {
-                        setFieldValue("addressType", "Home");
-                        setIsOther(false);
-                        setFieldValue("otherName", "");
-                      }}
-                    />
-                    <Text className="ml-4">Home</Text>
-                  </View>
+            setSubmitting(false);
 
-                  <View className="flex flex-row items-center mb-4">
-                    <CheckBox
-                      value={values.addressType === "Shop"}
-                      onValueChange={() => {
-                        setFieldValue("addressType", "Shop");
-                        setIsOther(false);
-                        setFieldValue("otherName", "");
-                      }}
-                    />
-                    <Text className="ml-4">Shop</Text>
-                  </View>
+            if (pickUpLocation.placeName && dropOffLocation.placeName) {
+              router.push("/(app)/(tabs)/(home)/checkout");
+            } else {
+              router.push("/(app)/(tabs)/(home)/search");
+            }
+          }}
+        >
+          {({
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            values,
+            errors,
+            touched,
+            setFieldValue,
+            isSubmitting,
+          }) => (
+            <View className="flex gap-4">
+              {/* House/Apartment (Optional) */}
+              <Input
+                className="border border-gray-300 p-3 rounded-md"
+                placeholder="House/Apartment (Optional)"
+                value={values.houseApartment}
+                onChangeText={handleChange("houseApartment")}
+                onBlur={handleBlur("houseApartment")}
+              />
 
-                  <View className="flex flex-row items-center mb-4">
-                    <CheckBox
-                      value={values.addressType === "Other"}
-                      onValueChange={() => {
-                        setFieldValue("addressType", "Other");
-                        setIsOther(true);
-                      }}
-                    />
-                    <Text className="ml-4">Other</Text>
-                  </View>
-                </View>
-                {/* If "Other" is selected, show additional input field */}
-                {isOther && (
-                  <>
-                    <TextInput
-                      className="border p-2 mb-4 rounded-md"
-                      placeholder="Specify address type"
-                      value={values.otherName}
-                      onChangeText={handleChange("otherName")}
-                      onBlur={handleBlur("otherName")}
-                    />
-                    {touched.otherName && errors.otherName && (
-                      <Text className="text-red-500 mb-2">
-                        {errors.otherName}
-                      </Text>
-                    )}
-                  </>
-                )}
+              {/* Name */}
+              <Input
+                className="border border-gray-300 p-3 rounded-md"
+                placeholder="Name"
+                value={values.name}
+                onChangeText={handleChange("name")}
+                onBlur={handleBlur("name")}
+              />
+              {touched.name && errors.name && (
+                <Text className="text-red-500 text-sm">{errors.name}</Text>
+              )}
 
-                {/* Submit Button */}
-                <Button title="Submit" onPress={() => handleSubmit()} />
+              {/* Phone Number */}
+              <Input
+                className="border border-gray-300 p-3 rounded-md"
+                placeholder="Phone Number"
+                keyboardType="phone-pad"
+                value={values.phoneNumber}
+                onChangeText={handleChange("phoneNumber")}
+                onBlur={handleBlur("phoneNumber")}
+              />
+              {touched.phoneNumber && errors.phoneNumber && (
+                <Text className="text-red-500 text-sm">
+                  {errors.phoneNumber}
+                </Text>
+              )}
+
+              {/* Address Type Checkboxes */}
+              <Text className="text-gray-700">Save as:</Text>
+              <View className="flex flex-row space-x-4">
+                {/* Home Checkbox */}
+                <TouchableOpacity
+                  className="flex flex-row items-center"
+                  onPress={() => {
+                    setFieldValue("addressType", "Home");
+                    setIsOther(false);
+                    setFieldValue("otherName", "");
+                  }}
+                >
+                  <CheckBox
+                    value={values.addressType === "Home"}
+                    onValueChange={() => {
+                      setFieldValue("addressType", "Home");
+                      setIsOther(false);
+                      setFieldValue("otherName", "");
+                    }}
+                    color={
+                      values.addressType === "Home" ? "#3B82F6" : undefined
+                    }
+                  />
+                  <Text className="ml-2 text-gray-800">Home</Text>
+                </TouchableOpacity>
+
+                {/* Shop Checkbox */}
+                <TouchableOpacity
+                  className="flex flex-row items-center"
+                  onPress={() => {
+                    setFieldValue("addressType", "Shop");
+                    setIsOther(false);
+                    setFieldValue("otherName", "");
+                  }}
+                >
+                  <CheckBox
+                    value={values.addressType === "Shop"}
+                    onValueChange={() => {
+                      setFieldValue("addressType", "Shop");
+                      setIsOther(false);
+                      setFieldValue("otherName", "");
+                    }}
+                    color={
+                      values.addressType === "Shop" ? "#3B82F6" : undefined
+                    }
+                  />
+                  <Text className="ml-2 text-gray-800">Shop</Text>
+                </TouchableOpacity>
+
+                {/* Other Checkbox */}
+                <TouchableOpacity
+                  className="flex flex-row items-center"
+                  onPress={() => {
+                    setFieldValue("addressType", "Other");
+                    setIsOther(true);
+                  }}
+                >
+                  <CheckBox
+                    value={values.addressType === "Other"}
+                    onValueChange={() => {
+                      setFieldValue("addressType", "Other");
+                      setIsOther(true);
+                    }}
+                    color={
+                      values.addressType === "Other" ? "#3B82F6" : undefined
+                    }
+                  />
+                  <Text className="ml-2 text-gray-800">Other</Text>
+                </TouchableOpacity>
               </View>
-            )}
-          </Formik>
+              {touched.addressType && errors.addressType && (
+                <Text className="text-red-500 text-sm">
+                  {errors.addressType}
+                </Text>
+              )}
+
+              {/* If "Other" is selected, show additional input field */}
+              {isOther && (
+                <>
+                  <Input
+                    className="border border-gray-300 p-3 rounded-md"
+                    placeholder="Specify address type"
+                    value={values.otherName}
+                    onChangeText={handleChange("otherName")}
+                    onBlur={handleBlur("otherName")}
+                  />
+                  {touched.otherName && errors.otherName && (
+                    <Text className="text-red-500 text-sm">
+                      {errors.otherName}
+                    </Text>
+                  )}
+                </>
+              )}
+
+              {/* Submit Button */}
+              <Pressable
+                onPress={() => handleSubmit()}
+                disabled={isSubmitting}
+                className={`mt-4 p-4 rounded-md items-center ${
+                  isSubmitting ? "bg-gray-400" : "bg-blue-500"
+                }`}
+              >
+                <Text className="text-white font-semibold">Submit</Text>
+              </Pressable>
+            </View>
+          )}
+        </Formik>
       </ScrollView>
     </SafeAreaView>
   );

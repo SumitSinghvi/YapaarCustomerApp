@@ -8,7 +8,7 @@ import {
   Keyboard,
 } from "react-native";
 import debounce from "lodash.debounce";
-import { autocomplete, getLatandlong } from "~/src/services/places";
+import { autocomplete, getLatandlong, reverseGeocodingLatLong } from "~/src/services/places";
 import { router } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { setDropoffLocation, setPickupLocation } from "~/src/slices/location";
@@ -16,7 +16,9 @@ import { Input } from "~/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { recentRides } from "../services/recentRides";
 import Spinner from "./Spinner";
+import * as Location from "expo-location";
 
+// Define the Prediction interface for type safety
 interface Prediction {
   placePrediction: {
     placeId: string;
@@ -27,31 +29,26 @@ interface Prediction {
 }
 
 const PickupLocationInput = () => {
-  const [activeInput, setActiveInput] = useState("pickup");
+  const [activeInput, setActiveInput] = useState<"pickup" | "drop">("pickup");
   const [predictions, setPredictions] = useState<Prediction[] | null>([]);
 
   // Refs for focusing on inputs
   const pickupRef = useRef<TextInput>(null);
   const dropRef = useRef<TextInput>(null);
 
+  // Retrieve pickup and dropoff locations from Redux store
   const pickuplocation = useSelector(
     (state: { location: { pickup: any } }) => state.location.pickup
   );
   const droplocation = useSelector(
     (state: { location: { dropoff: any } }) => state.location.dropoff
   );
-  const [query, setQuery] = useState(() => {
-    if (pickuplocation.placeName) {
-      return pickuplocation.placeName;
-    }
-    return "";
-  });
-  const [dropQuery, setDropQuery] = useState(() => {
-    if (droplocation.placeName) {
-      return droplocation.placeName;
-    }
-    return "";
-  });
+
+  const [query, setQuery] = useState(() => pickuplocation.placeName || "");
+  const [dropQuery, setDropQuery] = useState(
+    () => droplocation.placeName || ""
+  );
+
   const dispatch = useDispatch();
 
   // Fetch recent rides using React Query
@@ -87,7 +84,7 @@ const PickupLocationInput = () => {
   }) => {
     setPredictions([]);
     Keyboard.dismiss();
-    // You can also fetch place details here if needed
+    // Fetch latitude and longitude based on place_id
     const latAndLong = await getLatandlong(prediction.place_id);
     if (activeInput === "drop") {
       setDropQuery(prediction.description);
@@ -102,11 +99,9 @@ const PickupLocationInput = () => {
       );
       router.push({
         pathname: "/(app)/(tabs)/(home)/search/pinLocation",
-        params: {
-          type: "drop",
-        },
+        params: { type: "drop" },
       });
-    } else if (activeInput === "pickup") {
+    } else {
       setQuery(prediction.description);
       dispatch(
         setPickupLocation({
@@ -119,9 +114,49 @@ const PickupLocationInput = () => {
       );
       router.push({
         pathname: "/(app)/(tabs)/(home)/search/pinLocation",
-        params: {
-          type: "pickup",
-        },
+        params: { type: "pickup" },
+      });
+    }
+  };
+  // Handle current location
+  const handleCurrent = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      console.log("Permission to access location was denied");
+      return;
+    }
+    const location = await Location.getCurrentPositionAsync({});
+    const { latitude, longitude } = location.coords;
+    const response = await reverseGeocodingLatLong(latitude, longitude);
+    if (activeInput === "drop") {
+      setDropQuery(response.results[0]?.formatted_address);
+      dispatch(
+        setDropoffLocation({
+          ...droplocation,
+          placeName: response.results[0]?.formatted_address,
+          placeId: response.results[0]?.place_id,
+          latitude,
+          longitude,
+        })
+      );
+      router.push({
+        pathname: "/(app)/(tabs)/(home)/search/pinLocation",
+        params: { type: "drop" },
+      });
+    } else {
+      setQuery(response.results[0]?.formatted_address);
+      dispatch(
+        setPickupLocation({
+          ...pickuplocation,
+          placeName: response.results[0]?.formatted_address,
+          placeId: response.results[0]?.place_id,
+          latitude,
+          longitude,
+        })
+      );
+      router.push({
+        pathname: "/(app)/(tabs)/(home)/search/pinLocation",
+        params: { type: "pickup" },
       });
     }
   };
@@ -141,11 +176,12 @@ const PickupLocationInput = () => {
   }, [pickuplocation.placeName]);
 
   return (
-    <View className="px-4">
+    <View className="bg-white p-4">
+      {/* Pickup Location Input */}
       <Input
         ref={pickupRef}
-        className="w-[90%] mx-auto px-4 mb-2"
-        placeholder={`Enter pick up location`}
+        className="w-full px-4 mb-4 border border-gray-300 rounded-md"
+        placeholder="Enter pickup location"
         value={query}
         onChangeText={(text) => {
           setQuery(text);
@@ -155,10 +191,12 @@ const PickupLocationInput = () => {
         onFocus={() => setActiveInput("pickup")}
         returnKeyType="next"
       />
+
+      {/* Dropoff Location Input */}
       <Input
         ref={dropRef}
-        className="w-[90%] mx-auto px-4"
-        placeholder={`Where to ?`}
+        className="w-full px-4 mb-4 border border-gray-300 rounded-md"
+        placeholder="Where to?"
         value={dropQuery}
         onChangeText={(text) => {
           setDropQuery(text);
@@ -168,42 +206,51 @@ const PickupLocationInput = () => {
         onFocus={() => setActiveInput("drop")}
         returnKeyType="done"
       />
-      {predictions &&
-        predictions.length > 0 &&
-        predictions.map((prediction: Prediction) => (
-          <TouchableOpacity
-            className="py-2 mt-2 mx-4 border-b border-gray-200 "
-            key={prediction.placePrediction.placeId}
-            onPress={() =>
-              handleSelectPrediction({
-                description: prediction.placePrediction.text.text,
-                place_id: prediction.placePrediction.placeId,
-              })
-            }
-          >
-            <Text
-              ellipsizeMode="tail"
-              numberOfLines={1}
-              className="text-xs text-stone-600"
+
+      {/* Autocomplete Predictions */}
+      {predictions && predictions.length > 0 && (
+        <ScrollView className="max-h-60">
+          {predictions.map((prediction: Prediction) => (
+            <TouchableOpacity
+              key={prediction.placePrediction.placeId}
+              className="py-3 px-4 border-b border-gray-200"
+              onPress={() =>
+                handleSelectPrediction({
+                  description: prediction.placePrediction.text.text,
+                  place_id: prediction.placePrediction.placeId,
+                })
+              }
             >
-              {prediction.placePrediction.text.text}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text className="text-gray-700">
+                {prediction.placePrediction.text.text}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
 
-      {/* Show loading state */}
-      {isLoading && <Spinner visible={true} size="large" color="#d5d5d5" />}
+      {/* Loading Spinner */}
+      {isLoading && (
+        <View className="flex justify-center items-center mt-4">
+          <Spinner visible={true} size="large" color="#3B82F6" />
+        </View>
+      )}
 
-      {/* Show error if there's an issue */}
-      {error && <Text>Error fetching recent addresses.</Text>}
+      {/* Error Message */}
+      {error && (
+        <Text className="text-red-500 text-center mt-4">
+          Error fetching recent addresses.
+        </Text>
+      )}
 
-      {/* Display recent addresses if available */}
+      {/* Recent Addresses */}
       {!isLoading &&
         !error &&
         recentAddresses &&
         predictions &&
-        predictions.length == 0 && (
-          <ScrollView className="py-4">
+        predictions.length === 0 && (
+          <View className="mt-4">
+            <Text className="text-gray-600 mb-2">Recent Addresses</Text>
             {recentAddresses.uniqueAddresses
               .filter(
                 (
@@ -234,43 +281,39 @@ const PickupLocationInput = () => {
                   index: number
                 ) => (
                   <TouchableOpacity
+                    key={index}
+                    className="py-3 px-4 border-b border-gray-200"
                     onPress={() => {
                       handleSelectPrediction({
                         description:
-                          activeInput == "pickup"
+                          activeInput === "pickup"
                             ? address.pickupAddress.address
                             : address.dropAddress.address,
                         place_id:
-                          activeInput == "drop"
+                          activeInput === "pickup"
                             ? address.pickupAddress.placeId
                             : address.dropAddress.placeId,
                       });
                     }}
-                    key={index}
-                    className="mb-2 py-2 mx-4 border-b border-gray-200 "
                   >
-                    {activeInput === "drop" ? (
-                      <Text
-                        ellipsizeMode="tail"
-                        numberOfLines={1}
-                        className="text-xs text-stone-600"
-                      >
-                        {address.dropAddress.address}
-                      </Text>
-                    ) : (
-                      <Text
-                        ellipsizeMode="tail"
-                        numberOfLines={1}
-                        className="text-xs text-stone-600"
-                      >
-                        {address.pickupAddress.address}
-                      </Text>
-                    )}
+                    <Text ellipsizeMode="tail" numberOfLines={2} className="text-gray-700">
+                      {activeInput === "pickup"
+                        ? address.pickupAddress.address
+                        : address.dropAddress.address}
+                    </Text>
                   </TouchableOpacity>
                 )
               )}
-          </ScrollView>
+          </View>
         )}
+      <View className="flex flex-row mx-auto gap-2">
+        <TouchableOpacity onPress={() => handleCurrent()} className="bg-gray-200 flex-1 items-center font-semibold p-4 rounded-md">
+          <Text>Current Location</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleCurrent()} className="bg-gray-200 flex-1 items-center font-semibold p-4 rounded-md">
+          <Text>Locate on map</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

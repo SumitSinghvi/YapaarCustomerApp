@@ -3,9 +3,7 @@ import { router, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { Image, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useSelector } from "react-redux";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 
 export default function Home() {
