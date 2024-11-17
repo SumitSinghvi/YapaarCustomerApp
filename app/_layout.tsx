@@ -42,7 +42,7 @@ export default function Layout() {
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = useState(false);
   const [token, setToken] = useState<string | null>(null);
 
-  // Move useInitializeSocket to the top level
+  //initialize socket
   useInitializeSocket(token);
 
   useEffect(() => {

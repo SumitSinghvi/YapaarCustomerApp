@@ -7,6 +7,7 @@ import { router } from "expo-router";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "~/src/slices/authSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { initializeSocket } from "~/src/services/socket";
 
 export default function signIn() {
   const dispatch = useDispatch();
@@ -89,6 +90,7 @@ export default function signIn() {
               dispatch(setCredentials({ user, token }));
               await AsyncStorage.setItem("tokenYCA", token);
               await AsyncStorage.setItem("userYCA", JSON.stringify(user));
+              initializeSocket(token);
               router.replace("/");
             } catch (error) {
               console.error(error);
