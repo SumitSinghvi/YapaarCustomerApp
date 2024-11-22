@@ -1,6 +1,7 @@
 import axios from "axios";
 
 export async function getLatandlong(place_id: string) {
+  console.log("place id : ",place_id);
   const GOOGLE_PLACES_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API;
 
   try {
@@ -63,6 +64,26 @@ export async function reverseGeocodingLatLong(lat: number, long: number) {
       return response.data;
     }
     return response;
+  } catch (error) {
+    console.error("Error fetching autocomplete predictions:", error);
+  }
+}
+
+export async function priceEstimate(origin: string, destination: string) {
+  const GOOGLE_PLACES_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API;
+
+  try {
+    const response =
+      await axios.get(`https://maps.googleapis.com/maps/api/distancematrix/json
+        ?destinations=place_id:${destination}
+        &origins=place_id:${origin}
+        &units=metric
+        &key=${GOOGLE_PLACES_API_KEY}`);
+
+    if (response.data) {
+      return response.data;
+    }
+    return null;
   } catch (error) {
     console.error("Error fetching autocomplete predictions:", error);
   }

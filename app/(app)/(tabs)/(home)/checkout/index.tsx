@@ -76,7 +76,7 @@ export default function chooseVehicle() {
             </Text>
           </View>
           <View className="p-2">
-            <Pressable className="p-2 bg-blue-400 rounded-md w-[30%]">
+            <Pressable onPress={() => router.push("/(app)/(tabs)/(home)/search")} className="p-2 bg-blue-400 rounded-md w-[30%]">
               <Text className="text-center text-white">Edit location</Text>
             </Pressable>
           </View>
